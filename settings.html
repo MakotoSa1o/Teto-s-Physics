@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configuración – Teto’s Physics</title>
+  <meta name="description" content="Ajustes generales y de perfil de Teto’s Physics." />
+  <style>
+    /* Variables globales */
+    :root {
+      --bg: #0b0f14;
+      --panel: #121824;
+      --muted: #8aa0b4;
+      --text: #e8f0f7;
+      --brand: #7c5cff;
+      --brand-2: #26d9a5;
+      --border: #223044;
+      --success: #2bd67b;
+      --shadow: 0 8px 24px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.2);
+      --radius: 14px;
+      --radius-sm: 10px;
+    }
+
+    /* Reset y base */
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Noto Sans", sans-serif;
+      color: var(--text);
+    }
+
+    .background-img {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Layout principal */
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+    aside {
+      background: linear-gradient(180deg, #0f1522, #0e1420 40%, #0b111d);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      position: sticky; top: 0; height: 100vh;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 18px 22px;
+    }
+
+    /* Marca & navegación */
+    .brand {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+    }
+    .brand-logo {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      border-radius: 10px;
+      background: conic-gradient(from 210deg at 50% 50%, var(--brand), var(--brand-2), var(--brand));
+      color: #0a0f14; font-weight: 800;
+    }
+    .brand h1 {
+      margin: 0; font-size: 18px; color: var(--text);
+    }
+    nav ul {
+      list-style: none; padding: 0; margin: 16px 0 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    nav a {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: var(--text);
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: background .12s, border-color .12s;
+    }
+    nav a:hover {
+      background: #141c2a; border-color: var(--border);
+    }
+
+    /* Topbar */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .topbar .title {
+      margin: 0; font-size: 20px; color: var(--text);
+    }
+
+    /* Contenedor de pestañas */
+    .settings-container {
+      width: 100%;
+    }
+    .tabs {
+      display: flex; gap: 8px; margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1; padding: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      color: var(--text);
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      transition: background .12s, border-bottom-color .12s;
+    }
+    .tab.active {
+      background: var(--panel);
+      border-bottom-color: var(--panel);
+    }
+    .tab:hover:not(.active) {
+      background: var(--panel);
+    }
+
+    /* Contenido de cada pestaña */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Tarjeta de ajustes */
+    .settings-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .settings-card h2 {
+      margin: 0 0 16px; font-size: 18px; color: var(--text);
+    }
+
+    /* Formularios */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .12s;
+    }
+    .form-group input[type="file"] {
+      color: var(--text);
+    }
+    .form-group input[type="checkbox"] {
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* Vista previa de avatar */
+    .avatar-preview {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .avatar-preview img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .avatar-preview .icon {
+      font-size: 32px; color: var(--muted);
+    }
+
+    /* Botones */
+    .btn-primary {
+      display: inline-block;
+      padding: 10px 16px;
+      background: var(--brand);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-primary:hover {
+      background: var(--brand-2);
+    }
+
+    @media (max-width: 768px) {
+      .app {
+        grid-template-columns: 60px 1fr;
+      }
+      main {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img class="background-img" src="fondo.png" alt="Tetos">
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside aria-label="Barra lateral de navegación">
+      <div class="brand" aria-label="Marca">
+        <img class="brand-logo" src="logo.png" alt="TetosPhysics">
+        <h1>Teto’s Physics</h1>
+      </div>
+      <nav aria-label="Menú principal">
+        <ul>
+          <li><a href="index.html#home">🏠 Home</a></li>
+          <li><a href="index.html#cursos">📚 Cursos</a></li>
+          <li><a href="index.html#profesores">👩‍🏫 Profesores</a></li>
+          <li><a href="index.html#simulaciones">🧪 Simulaciones</a></li>
+          <li><a href="settings.html" aria-current="page">⚙️ Configuración</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <h1 class="title">Configuración</h1>
+      </header>
+
+      <!-- CONTENIDO DE AJUSTES -->
+      <div class="settings-container">
+        <!-- PESTAÑAS -->
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="general" role="tab">General</button>
+          <button class="tab" data-tab="perfil" role="tab">Perfil</button>
+        </div>
+
+        <!-- GENERAL -->
+        <div id="general" class="tab-content active" role="tabpanel">
+          <div class="settings-card">
+            <h2>Configuración General</h2>
+            <form id="generalForm">
+              <div class="form-group">
+                <label for="language">Idioma</label>
+                <select id="language" name="language">
+                  <option value="es">Español</option>
+                  <option value="en">Inglés</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="theme">Tema</label>
+                <select id="theme" name="theme">
+                  <option value="light">Claro</option>
+                  <option value="dark">Oscuro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="notifications" name="notifications" />
+                  Notificaciones por correo
+                </label>
+              </div>
+              <button type="submit" class="btn-primary">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- PERFIL -->
+        <div id="perfil" class="tab-content" role="tabpanel">
+          <div class="settings-card">
+            <h2>Configuración de Perfil</h2>
+            <form id="profileForm" enctype="multipart/form-data">
+              <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="name" placeholder="Tu nombre" />
+              </div>
+              <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="tu@correo.com" />
+              </div>
+              <div class="form-group">
+                <label for="avatar">Avatar</label>
+                <div class="avatar-preview" id="avatarPreview">
+                  <span class="icon" aria-hidden="true">👤</span>
+                </div>
+                <input type="file" id="avatar" name="avatar" accept="image/*" />
+              </div>
+              <button type="submit" class="btn-primary">Actualizar perfil</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Cambiar pestañas
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(c => {
+          c.classList.remove('active');
+        });
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Vista previa de avatar antes de subir
+    const avatarInput = document.getElementById('avatar');
+    const previewEl = document.getElementById('avatarPreview');
+    avatarInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      previewEl.innerHTML = '';
+      previewEl.appendChild(img);
+    });
+
+    // Handlers de formulario
+    document.getElementById('generalForm').addEventListener('submit', e => {
+      e.preventDefault();
+      // Aquí podrías guardar en localStorage o enviar a un API
+      alert('Ajustes generales guardados.');
+    });
+    document.getElementById('profileForm').addEventListener('submit', e => {
+      e.preventDefault();
+      alert('Perfil actualizado.');
+    });
+  </script>
+</body>
+</html>

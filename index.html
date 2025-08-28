@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teto’s Physics</title>
+  <meta name="description" content="Cursos, simulaciones y recursos de física." />
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121824;
+      --muted: #8aa0b4;
+      --text: #e8f0f7;
+      --brand: #7c5cff;
+      --brand-2: #26d9a5;
+      --border: #223044;
+      --danger: #ff6b6b;
+      --success: #2bd67b;
+      --shadow: 0 8px 24px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.2);
+      --radius: 14px;
+      --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+
+      color: var(--text);
+    }
+
+    .background-img {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background-attachment: fixed;
+      background-position: center;
+    }
+
+    /* Layout */
+    .app { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: auto 1fr; min-height: 100vh; }
+    aside {
+      grid-row: 1 / span 2; grid-column: 1;
+      background: linear-gradient(180deg, #0f1522, #0e1420 40%, #0b111d);
+      border-right: 1px solid var(--border); padding: 20px;
+      position: sticky; top: 0; height: 100vh;
+    }
+    main { grid-column: 2; display: flex; flex-direction: column; gap: 18px; padding: 18px 22px 28px; }
+    header.topbar {
+      display: flex; align-items: center; gap: 12px;
+      background: linear-gradient(180deg, #131a27, #111826);
+      border: 1px solid var(--border); padding: 12px;
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+
+    /* Sidebar */
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .brand-logo {
+      width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+      background: conic-gradient(from 210deg at 50% 50%, var(--brand), var(--brand-2), var(--brand));
+      color: #0a0f14; font-weight: 800;
+    }
+    .brand h1 { margin: 0; font-size: 18px; }
+    nav ul { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
+    nav a {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      padding: 10px 12px; border-radius: 10px; border: 1px solid transparent;
+    }
+    nav a:hover, nav a[aria-current="page"] {
+      background: #141c2a; border-color: var(--border);
+    }
+    .nav-muted { color: var(--muted); font-size: 12px; margin: 16px 8px 8px; }
+
+    /* Topbar */
+    .search { flex: 1; position: relative; }
+    .search input {
+      width: 100%; padding: 12px 40px 12px 12px;
+      border: 1px solid var(--border); border-radius: 10px;
+      background: #0f1522; color: var(--text); outline: none;
+    }
+    .search .icon {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%); color: var(--muted);
+    }
+    .perfil {
+      display: flex; align-items: center; gap: 10px;
+      background: #0f1522; border: 1px solid var(--border);
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      color: var(--text);
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+    /* Sections */
+    .section {
+      background: linear-gradient(180deg, #111826, #0f1522);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px; box-shadow: var(--shadow);
+    }
+    .section h2 { margin: 0 0 10px; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width:1080px) {
+      .app { grid-template-columns: 80px 1fr; }
+      aside { padding: 16px; }
+      .brand h1, .nav-label { display: none; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width:640px) {
+      header.topbar { flex-wrap: wrap; }
+      .perfil { width: 100%; justify-content: space-between; }
+    }
+
+    /* Resource Card */
+    .card { background: #0f1522; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 999px; background: #0e1420;
+      border: 1px solid var(--border); color: var(--muted); font-size: 12px;
+    }
+    .media { display: grid; grid-template-columns: 280px 1fr; gap: 16px; padding: 16px; }
+    @media (max-width:820px) { .media { grid-template-columns: 1fr; } }
+    .preview {
+      background:
+        radial-gradient(180px 140px at 50% 30%, rgba(124,92,255,.2), transparent 60%),
+        linear-gradient(180deg, #0c1220, #0a101b);
+      border: 1px solid var(--border); border-radius: 12px;
+      display: grid; place-items: center; padding: 12px;
+    }
+    .preview svg { max-width: 100%; height: auto; }
+    .meta p { margin: 0 0 10px; color: var(--muted); }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      font-size: 12px; padding: 6px 10px; border-radius: 999px;
+      background: #12192a; border: 1px solid var(--border);
+    }
+
+    /* Comments */
+    .comments {
+      background: #0f1522; border: 1px solid var(--border);
+      border-radius: var(--radius); display: flex; flex-direction: column;
+    }
+    .comments-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+    }
+    .comment-list {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 14px; max-height: 420px; overflow: auto;
+    }
+    .comment {
+      background: #0e1420; border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 12px;
+    }
+    .comment .top {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 12px;
+    }
+    .comment .body { margin: 6px 0 0; }
+    .comment-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .btn {
+      background: #12192a; border: 1px solid var(--border);
+      color: var(--text); padding: 8px 10px; border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #141f31; }
+    .btn-danger {
+      background: #211218; border-color: #3a2126; color: #ffb3b3;
+    }
+    .new-comment {
+      border-top: 1px solid var(--border); padding: 12px 14px;
+      display: grid; gap: 8px;
+    }
+    .new-comment input,
+    .new-comment textarea {
+      width: 100%; padding: 10px;
+      background: #0d1320; color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .new-comment button { justify-self: end; }
+
+    /* Courses */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .course-card {
+      background: #0f1522; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform .12s ease, border-color .12s ease;
+    }
+    .course-card:hover { transform: translateY(-2px); border-color: #2a3b58; }
+    .course-media {
+      aspect-ratio: 3 / 2;
+      background:
+        radial-gradient(240px 160px at 10% 0%, rgba(124,92,255,.20), transparent 60%),
+        radial-gradient(200px 120px at 100% 0%, rgba(38,217,165,.18), transparent 55%),
+        linear-gradient(180deg, #0c1220, #0a101b);
+      display: grid; place-items: center; border-bottom: 1px solid var(--border);
+    }
+    .course-media svg { width: 64px; height: 64px; opacity: .9; }
+    .course-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .course-title { margin: 0; font-size: 16px; }
+    .course-info { display: flex; gap: 8px; flex-wrap: wrap; }
+    .course-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .course-actions .btn { padding: 8px 10px; }
+
+    /* Professors */
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .person-card {
+      background: #0f1522; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: transform .12s ease, border-color .12s ease;
+    }
+    .person-card:hover { transform: translateY(-2px); border-color: #2a3b58; }
+    .avatar {
+      aspect-ratio: 1 / 1;
+      background:
+        radial-gradient(200px 120px at 0% 0%, rgba(124,92,255,.22), transparent 55%),
+        radial-gradient(200px 120px at 100% 0%, rgba(38,217,165,.18), transparent 55%),
+        linear-gradient(180deg, #0c1220, #0a101b);
+      display: grid; place-items: center; border-bottom: 1px solid var(--border);
+    }
+    .avatar svg { width: 72px; height: 72px; opacity: .95; }
+    .person-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .person-name { margin: 0; font-size: 16px; }
+    .person-info { display: flex; gap: 8px; flex-wrap: wrap; }
+    .person-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+    /* Accessibility */
+    :focus-visible { outline: 2px solid var(--brand-2); outline-offset: 2px; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); border: 0;
+    }
+
+    /* Simulations */
+    .tabs {
+      display: flex; gap: 12px; margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      background: none; border: none; color: var(--text);
+      padding: 8px 12px; cursor: pointer; font-size: 14px;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .tab:hover { background: var(--panel); }
+    .tab.active { background: var(--panel); }
+    .tab-content { display: none; }
+    .simulations-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;
+    }
+    .simulation-card {
+      background: #0f1522; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; padding: 12px;
+      transition: transform .12s, border-color .12s;
+    }
+    .simulation-card:hover { transform: translateY(-2px); border-color: #2a3b58; }
+    .simulation-media {
+      aspect-ratio: 1/1; width: 100%;
+      background:
+        radial-gradient(200px 200px at 50% 50%, rgba(124,92,255,.15), transparent),
+        radial-gradient(200px 200px at 100% 50%, rgba(38,217,165,.12), transparent),
+        linear-gradient(180deg,#0c1220,#0a101b);
+      border-radius: 10px; display: grid; place-items: center;
+    }
+    .simulation-media svg { width: 48px; height: 48px; opacity: .9; }
+    .simulation-label {
+      margin-top: 10px; font-size: 14px; color: var(--text); text-align: center;
+    }
+
+    /* Founders */
+    .founders-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;
+    }
+    .founder-card {
+      background: linear-gradient(180deg, #111826, #0f1522);
+      border: 1px solid var(--border); border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 12px; text-align: center;
+    }
+    .founder-card img {
+      width: 100%; border-radius: 8px; object-fit: cover;
+    }
+    .founder-card .label {
+      color: var(--text); font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <img class="background-img" src="fondo.png" alt="teto">
+  <div class="app">
+    <aside aria-label="Barra lateral de navegación">
+      <div class="brand" aria-label="Marca">
+        <img class="brand-logo" src="logo.png" alt="Tetos Physics">
+        <h1>Teto’s Physics</h1>
+      </div>
+      <div class="nav-muted">Navegación</div>
+      <nav>
+        <ul>
+          <li><a href="#home" class="nav" aria-current="page">🏠 <span class="nav-label">Home</span></a></li>
+          <li><a href="#cursos" class="nav">📚 <span class="nav-label">Cursos</span></a></li>
+          <li><a href="#profesores" class="nav">👩‍🏫 <span class="nav-label">Profesores</span></a></li>
+          <li><a href="#simulaciones" class="nav">🧪 <span class="nav-label">Simulaciones</span></a></li>
+          <li><a href="#contacto" class="nav">✉️ <span class="nav-label">Fundadores</span></a></li>
+          <li><a href="#acerca" class="nav">ℹ️ <span class="nav-label">Acerca de</span></a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="topbar" role="search">
+        <div class="search" aria-label="Buscar contenido">
+          <label class="sr-only" for="q">Buscar</label>
+          <input id="q" type="search" placeholder="Buscar cursos, profesores o recursos…" autocomplete="off" />
+          <span class="icon" aria-hidden="true">🔎</span>
+        </div>
+        <button 
+            class="perfil" 
+            aria-label="Abrir perfil"
+            onclick="location.href='settings.html'"
+            >
+            <span class="status-dot" aria-hidden="true"></span>
+            Perfil
+        </button>
+      </header>
+
+      <!-- HOME / RECIENTES -->
+      <section class="section" id="home" aria-labelledby="recientes-title">
+        <h2 id="recientes-title">Recientes</h2>
+        <div class="grid">
+          <!-- Recurso destacado -->
+          <article class="card" data-type="recurso" data-tags="peluche anime juego personaje diseño colorimetria">
+            <div class="card-header">
+              <div class="badge" aria-label="Tipo de recurso">
+                <span aria-hidden="true">🧩</span> Recurso destacado
+              </div>
+              <small class="badge" title="Publicado recientemente">
+                <span aria-hidden="true">⏱</span> Nuevo
+              </small>
+            </div>
+            <div class="media">
+              <figure class="preview" aria-label="Vista previa del recurso">
+                <svg width="220" height="220" viewBox="0 0 220 220" role="img" aria-label="Ilustración de un personaje de peluche">
+                  <defs>
+                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#26d9a5"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="220" height="220" rx="16" fill="#0b111d" stroke="#223044"/>
+                  <circle cx="110" cy="90" r="40" fill="url(#g1)" opacity="0.85"/>
+                  <rect x="75" y="120" width="70" height="50" rx="16" fill="#7c5cff" opacity="0.35"/>
+                  <circle cx="95" cy="85" r="6" fill="#0b111d"/>
+                  <circle cx="125" cy="85" r="6" fill="#0b111d"/>
+                  <path d="M95 100 Q110 112 125 100" stroke="#0b111d" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>
+                <figcaption class="sr-only">Peluche de personaje, estilo anime.</figcaption>
+              </figure>
+              <div class="meta">
+                <h3 style="margin:0 0 6px">Personaje de peluche — Estudio de materiales y colores</h3>
+                <p>Ejemplo de recurso visual para análisis de formas, materiales y colorimetría. Se moderan automáticamente todas las palabras ofensivas.</p>
+                <div class="tags" aria-label="Etiquetas">
+                  <span class="tag">Anime</span>
+                  <span class="tag">Diseño</span>
+                  <span class="tag">Percepción visual</span>
+                  <span class="tag">Reciente</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Panel de comentarios -->
+          <aside class="comments" aria-label="Comentarios">
+            <div class="comments-header">
+              <strong>Comentarios</strong>
+              <span id="count" style="color:var(--muted)"></span>
+            </div>
+            <div id="commentList" class="comment-list" aria-live="polite" aria-relevant="additions removals"></div>
+            <form class="new-comment" id="commentForm" aria-labelledby="new-comment-title">
+              <h4 id="new-comment-title" style="margin:0">Añadir comentario</h4>
+              <input id="author" name="author" type="text" maxlength="40" placeholder="Tu nombre (opcional)" aria-label="Nombre" />
+              <textarea id="content" name="content" rows="3" maxlength="400" placeholder="Escribe un comentario respetuoso…" aria-label="Comentario" required></textarea>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
+                <small style="color:var(--muted)">Se moderan palabras ofensivas automáticamente.</small>
+                <button class="btn" type="submit">Publicar</button>
+              </div>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+      <!-- CURSOS -->
+      <section class="section" id="cursos" aria-labelledby="cursos-title">
+        <h2 id="cursos-title">Cursos</h2>
+        <p style="color:var(--muted); margin-top:6px">
+          Usa el buscador superior para filtrar por nombre o tema (ej.: “moderna”, “computacional”, “espacio”).
+        </p>
+        <div class="courses-grid" aria-label="Listado de cursos">
+          <!-- Física I -->
+          <article class="course-card" data-tags="fisica i mecanica cinematica dinamica newton inicial">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#26d9a5"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av1)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física I</h3>
+              <div class="course-info">
+                <span class="tag">Mecánica</span>
+                <span class="tag">Inicial</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">12 semanas • Nivel básico</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física II -->
+          <article class="course-card" data-tags="fisica ii electricidad magnetismo campos circuitos intermedio">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#26d9a5"/><stop offset="100%" stop-color="#7c5cff"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av2)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física II</h3>
+              <div class="course-info">
+                <span class="tag">Electromagnetismo</span>
+                <span class="tag">Intermedio</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">10 semanas • Requiere Física I</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física III -->
+          <article class="course-card" data-tags="fisica iii ondas termodinamica fluidos calor intermedio">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av3" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffb86b"/><stop offset="100%" stop-color="#26d9a5"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av3)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física III</h3>
+              <div class="course-info">
+                <span class="tag">Ondas</span>
+                <span class="tag">Termodinámica</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">8 semanas • Intermedio</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física IV -->
+          <article class="course-card" data-tags="fisica iv relatividad cuantica moderna avanzado">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av4" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#ffa3d1"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av4)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física IV</h3>
+              <div class="course-info">
+                <span class="tag">Relatividad</span>
+                <span class="tag">Cuántica</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">12 semanas • Avanzado</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física Moderna -->
+          <article class="course-card" data-tags="fisica moderna cuantica particulas nuclear teorico">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av5" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#26d9a5"/><stop offset="100%" stop-color="#ffb86b"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av5)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física Moderna</h3>
+              <div class="course-info">
+                <span class="tag">Cuántica</span>
+                <span class="tag">Partículas</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">6 semanas • Enfoque teórico</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física Computacional -->
+          <article class="course-card" data-tags="fisica computacional programacion simulacion numerica python proyecto">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av6" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffa3d1"/><stop offset="100%" stop-color="#7c5cff"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av6)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física Computacional</h3>
+              <div class="course-info">
+                <span class="tag">Simulación</span>
+                <span class="tag">Python</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">8 semanas • Proyecto final</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física Experimental -->
+          <article class="course-card" data-tags="fisica experimental laboratorio medicion errores instrumentacion practico">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av7" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#26d9a5"/><stop offset="100%" stop-color="#ffa3d1"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av7)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física Experimental</h3>
+              <div class="course-info">
+                <span class="tag">Laboratorio</span>
+                <span class="tag">Medición</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">10 semanas • Práctico</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+          <!-- Física del Espacio -->
+          <article class="course-card" data-tags="fisica del espacio astrofisica orbital cohetes relatividad general actual">
+            <div class="course-media" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img" aria-label="Instructor">
+                <defs><linearGradient id="av8" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#26d9a5"/>
+                </linearGradient></defs>
+                <circle cx="32" cy="24" r="14" fill="url(#av8)"/>
+                <rect x="14" y="36" width="36" height="16" rx="8" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">Física del Espacio</h3>
+              <div class="course-info">
+                <span class="tag">Astrofísica</span>
+                <span class="tag">Órbitas</span>
+              </div>
+              <div class="course-actions">
+                <small style="color:var(--muted)">6 semanas • Temas actuales</small>
+                <button class="btn">Ver curso</button>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div style="margin-top:16px; color:var(--muted); display:flex; justify-content:flex-end">
+          <small>Los Tetos Association — ©2025</small>
+        </div>
+      </section>
+
+      <!-- PROFESORES -->
+      <section class="section" id="profesores" aria-labelledby="profesores-title">
+        <h2 id="profesores-title">Profesores</h2>
+        <p style="color:var(--muted); margin-top:6px">
+          Listado de cuentas de docentes. Escribe “villegas” en el buscador para filtrar.
+        </p>
+        <div class="people-grid" aria-label="Listado de profesores">
+          <article class="person-card" data-tags="villegas docente profesor cuentas mecanica">
+            <div class="avatar" aria-hidden="true">
+              <svg viewBox="0 0 96 96" role="img" aria-label="Foto de perfil">
+                <defs><linearGradient id="pf1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#26d9a5"/>
+                </linearGradient></defs>
+                <circle cx="48" cy="36" r="18" fill="url(#pf1)"/>
+                <rect x="22" y="56" width="52" height="22" rx="11" fill="#203049"/>
+              </svg>
+            </div>
+            <div class="person-body">
+              <h3 class="person-name">Villegas</h3>
+              <div class="person-info">
+                <span class="tag">Docente</span>
+                <span class="tag">Activo</span>
+              </div>
+              <div class="person-actions">
+                <button class="btn">Ver perfil</button>
+                <small style="color:var(--muted)">Lun–Vie</small>
+              </div>
+            </div>
+          </article>
+          <!-- (Repetir los otros 7 Villegas con data-tags y variantes...) -->
+        </div>
+        <div style="margin-top:16px; color:var(--muted); display:flex; justify-content:flex-end">
+          <small>Los Tetos Association — ©2025</small>
+        </div>
+      </section>
+
+      <!-- SIMULACIONES -->
+      <section class="section" id="simulaciones" aria-labelledby="simulaciones-title">
+        <h2 id="simulaciones-title">Simulaciones</h2>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="fisica" role="tab">Física</button>
+          <button class="tab" data-tab="quimica" role="tab">Química</button>
+          <button class="tab" data-tab="matematicas" role="tab">Matemáticas</button>
+        </div>
+        <div class="tab-content" id="fisica-content" style="display:block" role="tabpanel">
+          <div class="simulations-grid" aria-label="Simulaciones de Física">
+            <template id="sim-card">
+              <article class="simulation-card" data-tags="fisica sistema solar">
+                <div class="simulation-media" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" aria-label="Sistema Solar">
+                    <defs><linearGradient id="ss1" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#26d9a5"/>
+                    </linearGradient></defs>
+                    <circle cx="32" cy="32" r="14" fill="url(#ss1)"/>
+                    <circle cx="32" cy="32" r="4" fill="#0b111d"/>
+                    <circle cx="44" cy="32" r="4" fill="#0b111d"/>
+                    <circle cx="20" cy="32" r="4" fill="#0b111d"/>
+                  </svg>
+                </div>
+                <div class="simulation-label">Sistema Solar</div>
+              </article>
+            </template>
+          </div>
+        </div>
+        <div class="tab-content" id="quimica-content" role="tabpanel">
+          <p style="color:var(--muted)">Próximamente simulaciones de Química.</p>
+        </div>
+        <div class="tab-content" id="matematicas-content" role="tabpanel">
+          <p style="color:var(--muted)">Próximamente simulaciones de Matemáticas.</p>
+        </div>
+      </section>
+
+      <!-- CONTACTO (Fundadores) -->
+      <section class="section" id="contacto" aria-labelledby="contacto-title">
+        <h2 id="contacto-title">Fundadores</h2>
+        <div class="founders-grid">
+          <div class="founder-card">
+            <img src="celso_losada.png" alt="Sexo" />
+            <div class="label">Sexo</div>
+          </div>
+          <div class="founder-card">
+            <img src="juan_terant.png" alt="yo" />
+            <div class="label">yo</div>
+          </div>
+          <div class="founder-card">
+            <img src="andres_reinefeld.png" alt="Caebza de pipe" />
+            <div class="label">Caebza de pipe</div>
+          </div>
+          <div class="founder-card">
+            <img src="miguel_torrealba.jpg" alt="migüel" />
+            <div class="label">migüel</div>
+          </div>
+        </div>
+        <div style="margin-top:16px; color:var(--muted); display:flex; justify-content:flex-end">
+          <small>Los Tetos Association — ©2025</small>
+        </div>
+      </section>
+
+      <!-- ACERCA DE -->
+      <section class="section" id="acerca" aria-labelledby="acerca-title">
+        <h2 id="acerca-title">Acerca de</h2>
+        <p style="color:var(--muted)">
+          Los Teto's Association Fecha de fundación: Lunes, 04 de agosto de 2025 Proyecto principal: Teto's Physics 1. Visión General de la Empresa Los Teto's Association es una organización dedicada al desarrollo, producción y mantenimiento de soluciones digitales educativas, con especial énfasis en el aprendizaje de la física. Fundada con el propósito de democratizar el acceso al conocimiento científico, la empresa combina innovación tecnológica, diseño narrativo y pedagogía moderna para crear experiencias de aprendizaje profundas, accesibles y atractivas. Su principal producto es Teto's Physics, una plataforma web integral diseñada para estudiantes de física de todos los niveles, desde secundaria hasta universitario. 2. Teto's Physics: Plataforma Educativa Teto's Physics es más que una página web: es un ecosistema digital de aprendizaje colaborativo. Su arquitectura se divide en cuatro pilares fundamentales: A. Red Social de Preguntas y Respuestas Espacio interactivo donde los estudiantes pueden publicar dudas en forma de posts. Las respuestas se gestionan mediante comentarios, permitiendo debates, aclaraciones y aportes múltiples. Moderación comunitaria y sistema de reputación para destacar contribuciones valiosas. Etiquetas temáticas para organizar el contenido por áreas: mecánica, electromagnetismo, física moderna, etc. B. Catálogo de Cursos de Física Lista estructurada de cursos divididos por niveles y temáticas. Cada curso incluye: Módulos temáticos Material audiovisual y textual Ejercicios interactivos Evaluaciones formativas Ejemplos de cursos: Física I: Fundamentos del Universo Física Moderna: Más Allá del Clásico Cosmología y Física del Espacio-Tiempo C. Directorio de Profesores para Tutorías Base de datos de docentes disponibles para tutorías personalizadas. Filtros por especialidad, nivel académico, idioma y disponibilidad horaria. Perfil profesional con experiencia, metodología y valoraciones de estudiantes. Sistema de reserva directa y seguimiento de sesiones. D. Simuladores Interactivos Herramientas digitales para experimentar con fenómenos físicos, matemáticos y químicos. Simuladores diseñados para: Visualizar conceptos abstractos Manipular variables en tiempo real Realizar prácticas virtuales seguras Ejemplos: Simulador de caída libre con resistencia del aire Simulador de interferencia de ondas Calculadora gráfica de funciones matemáticas 3. Objetivos Estratégicos Accesibilidad: Romper barreras geográficas y económicas en el acceso al conocimiento científico. Interactividad: Fomentar el aprendizaje activo mediante herramientas digitales y colaborativas. Calidad pedagógica: Garantizar contenidos rigurosos, actualizados y adaptados a distintos estilos de aprendizaje. Estética y narrativa: Integrar diseño visual atractivo y simbología que refuerce la identidad del proyecto. 4. Desarrollo y Mantenimiento Los Teto's Association se encarga de: Diseño UX/UI de la plataforma Programación y arquitectura web Actualización de contenidos y cursos Gestión de comunidad y soporte técnico Integración de nuevas funcionalidades según retroalimentación de usuarios 5. Proyección Futura Expansión a otras áreas científicas: biología, astronomía, ingeniería. Desarrollo de una app móvil complementaria. Integración de inteligencia artificial para tutorías automatizadas. Alianzas con instituciones educativas para certificación de cursos.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Resalta el enlace activo
+    const navLinks = document.querySelectorAll('a.nav');
+    function highlightNav() {
+      const hash = location.hash || '#home';
+      navLinks.forEach(a =>
+        a.setAttribute('aria-current', a.getAttribute('href') === hash ? 'page' : 'false')
+      );
+    }
+    window.addEventListener('hashchange', highlightNav);
+    highlightNav();
+
+    // Búsqueda con data-tags
+    const norm = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    document.getElementById('q').addEventListener('input', e => {
+      const term = norm(e.target.value.trim());
+      document.querySelectorAll('[data-tags]').forEach(el => {
+        el.style.display = (!term || norm(el.getAttribute('data-tags')).includes(term)) ? '' : 'none';
+      });
+    });
+
+    // Comentarios con localStorage + filtro de lenguaje
+    const STORAGE_KEY = 'tetos-comments-v1';
+    const listEl = document.getElementById('commentList');
+    const countEl = document.getElementById('count');
+    const form = document.getElementById('commentForm');
+    const authorEl = document.getElementById('author');
+    const contentEl = document.getElementById('content');
+
+    const BAD_WORDS = ['tonto','idiota','estupido','imbecil'];
+
+    function sanitize(text) {
+      let clean = text;
+      BAD_WORDS.forEach(w => {
+        const re = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&') + '\\b','gi');
+        clean = clean.replace(re, '***');
+      });
+      return clean;
+    }
+
+    function loadComments() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { return []; }
+    }
+    function saveComments(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, m =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+      );
+    }
+    function linkify(text) {
+      const urlRe = /\bhttps?:\/\/[^\s<]+/g;
+      return text.replace(urlRe, url =>
+        `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+      );
+    }
+
+    function renderComments() {
+      const items = loadComments();
+      listEl.innerHTML = '';
+      countEl.textContent = `${items.length} ${items.length === 1 ? 'comentario' : 'comentarios'}`;
+      items.forEach((c, idx) => {
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML = `
+          <div class="top">
+            <span aria-hidden="true">🧑</span>
+            <strong>${c.author ? escapeHtml(c.author) : 'Anónimo'}</strong>
+            <span>·</span>
+            <time datetime="${new Date(c.date).toISOString()}">
+              ${new Intl.DateTimeFormat('es-VE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(c.date))}
+            </time>
+          </div>
+          <div class="body">${linkify(escapeHtml(c.content))}</div>
+          <div class="comment-actions">
+            <button class="btn btn-danger" aria-label="Eliminar comentario">Eliminar</button>
+          </div>
+        `;
+        div.querySelector('button').addEventListener('click', () => {
+          const all = loadComments();
+          all.splice(idx, 1);
+          saveComments(all);
+          renderComments();
+        });
+        listEl.appendChild(div);
+      });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const author = authorEl.value.trim();
+      const content = contentEl.value.trim();
+      if (!content) {
+        contentEl.focus();
+        return;
+      }
+      const moderated = sanitize(content);
+      const items = loadComments();
+      items.unshift({ author, content: moderated, date: Date.now() });
+      saveComments(items);
+      authorEl.value = '';
+      contentEl.value = '';
+      renderComments();
+      contentEl.focus();
+    });
+
+    renderComments();
+
+    // Pestañas de simulaciones
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.getElementById(`${tab.dataset.tab}-content`).style.display = 'block';
+      });
+    });
+
+    // Inyectar 6 tarjetas de “Sistema Solar” en Física
+    const grid = document.querySelector('#fisica-content .simulations-grid');
+    const tpl = document.getElementById('sim-card').content;
+    for (let i = 0; i < 6; i++) {
+      grid.appendChild(document.importNode(tpl, true));
+    }
+  </script>
+</body>
+</html>
